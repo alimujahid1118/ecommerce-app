@@ -1,0 +1,199 @@
+{% extends 'base.html' %} {% block content %}
+
+<section class="section-content padding-y bg">
+  <div class="container">
+    <div class="card">
+      <div class="row no-gutters">
+        <aside class="col-md-6">
+          <article class="gallery-wrap">
+            <div class="img-big-wrap mainImage">
+              <center>
+                <img src="{{ product.images.url }}" />
+              </center>
+            </div>
+          </article>
+
+          <ul class="thumb">
+            <li>
+              <a href="/static/images/products/tshirt.jpg" target="mainImage">
+                <img src="/static/images/products/tshirt.jpg" />
+              </a>
+
+              <a href="/static/images/products/tshirt2.jpg" target="mainImage">
+                <img src="/static/images/products/tshirt2.jpg" />
+              </a>
+
+              <a href="/static/images/products/tshirt3.jpg" target="mainImage">
+                <img src="/static/images/products/tshirt3.jpg" />
+              </a>
+            </li>
+          </ul>
+        </aside>
+
+        <main class="col-md-6 border-left">
+          <form action="#" method="POST">
+            <article class="content-body">
+              <h2 class="title">{{ product.product_name }}</h2>
+
+              <div class="rating-star">
+                <span>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star-half-o"></i>
+                  <span>24 reviews</span>
+                </span>
+              </div>
+
+              <div class="mb-3">
+                <var class="price h4">${{ product.price }}</var>
+              </div>
+
+              <p>{{ product.description }}</p>
+
+              <hr />
+
+              <div class="row">
+                <div class="item-option-select">
+                  <h6>Choose Color</h6>
+                  <select name="color" class="form-control" required>
+                    <option>Select</option>
+                    <option>Black</option>
+                    <option>White</option>
+                    <option>Blue</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="item-option-select">
+                  <h6>Select Size</h6>
+                  <select name="size" class="form-control">
+                    <option>Select</option>
+                    <option>Small</option>
+                    <option>Medium</option>
+                    <option>Large</option>
+                  </select>
+                </div>
+              </div>
+
+              <hr />
+              {% if product.stock > 0 %}
+              <button type="submit" class="btn btn-primary">
+                <span class="text">Add to Cart</span>
+                <i class="fas fa-shopping-cart"></i>
+              </button>
+              {% else %}
+              <button type="button" class="btn btn-secondary" disabled>
+                <span class="text">Out of Stock</span>
+              </button>
+              {% endif %}
+            </article>
+          </form>
+        </main>
+      </div>
+    </div>
+
+    <br />
+
+    <div class="row">
+      <div class="col-md-9">
+        <form action="#" method="POST">
+          <h5>Write Your Review</h5>
+
+          <div>
+            <label>How do you rate this product?</label>
+
+            <div class="rate">
+              <input type="radio" name="rating" value="5" /><label></label>
+              <input type="radio" name="rating" value="4" /><label></label>
+              <input type="radio" name="rating" value="3" /><label></label>
+              <input type="radio" name="rating" value="2" /><label></label>
+              <input type="radio" name="rating" value="1" /><label></label>
+            </div>
+
+            <br />
+
+            Review Title:
+            <input type="text" class="form-control" name="subject" />
+
+            <br />
+
+            Review:
+            <textarea rows="4" class="form-control"></textarea>
+
+            <br />
+
+            <input
+              type="submit"
+              value="Submit Review"
+              class="btn btn-primary"
+            />
+          </div>
+        </form>
+
+        <br />
+
+        <header class="section-heading">
+          <h3>Customer Reviews</h3>
+
+          <div class="rating-star">
+            <span>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star-half-o"></i>
+              <span>24 reviews</span>
+            </span>
+          </div>
+        </header>
+
+        <!-- Review 1 -->
+        <article class="box mb-3">
+          <div class="text">
+            <span class="date text-muted float-md-right">March 15, 2026</span>
+            <h6 class="mb-1">John Doe</h6>
+
+            <div class="rating-star">
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star-o"></i>
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <h6>Great Quality</h6>
+            <p>Very comfortable shirt. Fabric feels premium.</p>
+          </div>
+        </article>
+
+        <!-- Review 2 -->
+        <article class="box mb-3">
+          <div class="text">
+            <span class="date text-muted float-md-right">March 10, 2026</span>
+            <h6 class="mb-1">Sarah Khan</h6>
+
+            <div class="rating-star">
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star-half-o"></i>
+              <i class="fa fa-star-o"></i>
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <h6>Nice product</h6>
+            <p>Good value for money. Will buy again.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
