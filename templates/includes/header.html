@@ -78,13 +78,14 @@
           >Store</a
         >
         <div class="col-lg col-md-6 col-sm-12 col">
-          <form action="#" class="search">
+          <form action="{% url 'search' %}" class="search">
             <div class="input-group w-100">
               <input
                 type="text"
                 class="form-control"
                 style="width: 60%"
                 placeholder="Search"
+                name="keyword"
               />
 
               <div class="input-group-append">
@@ -107,11 +108,13 @@
                 <a href="./register.html"> Register</a>
               </div>
             </div>
-            <a href="./cart.html" class="widget-header pl-3 ml-3">
+            <a href="{% url 'cart_detail' %}" class="widget-header pl-3 ml-3">
               <div class="icon icon-sm rounded-circle border">
                 <i class="fa fa-shopping-cart"></i>
               </div>
-              <span class="badge badge-pill badge-danger notify">0</span>
+              <span class="badge badge-pill badge-danger notify"
+                >{{ total_quantity }}</span
+              >
             </a>
           </div>
           <!-- widgets-wrap.// -->

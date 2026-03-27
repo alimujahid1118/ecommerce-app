@@ -21,3 +21,13 @@ class Product(models.Model):
         if not self.slug:
             self.slug = slugify(self.product_name)
         super().save(*args, **kwargs)
+
+class ProductVariation(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    variation_category = models.CharField(max_length=100, choices=(('color', 'color'), ('size', 'size'), ('material', 'material')))
+    variation_value = models.CharField(max_length=100)
+    is_active = models.BooleanField(default=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.variation_value
