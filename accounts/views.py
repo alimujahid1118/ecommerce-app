@@ -1,3 +1,199 @@
-from django.shortcuts import render
+from .models import Accounts
+from django.shortcuts import render, redirect
+from .forms import RegistrationForm, LoginForm
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
-# Create your views here.
+#Verification Email
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import EmailMessage
+
+def register(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+    else:
+        if request.method == 'POST':
+            form = RegistrationForm(request.POST)
+
+            if form.is_valid():
+                email = form.cleaned_data.get('email')
+
+                if Accounts.objects.filter(email=email).exists():
+                    messages.error(request, 'Email already exists.')
+                    return redirect('register')
+                
+                user = form.save(commit=False)
+
+                # Generate unique username
+                base_username = user.email.split('@')[0]
+                username = base_username
+                counter = 1
+                while Accounts.objects.filter(username=username).exists():
+                    username = f"{base_username}_{counter}"
+                    counter += 1
+
+                # Create user safely
+                user = Accounts.objects.create_user(
+                    email=user.email,
+                    username=username,
+                    first_name=user.first_name,
+                    last_name=user.last_name,
+                    password=form.cleaned_data.get('password')
+                )
+                user.phone_no = form.cleaned_data.get('phone_no')
+                user.is_active = False
+                user.save()
+
+                # Send activation email
+                current_site = get_current_site(request)
+                message = render_to_string(
+                    'accounts/activation_email.html',
+                    {
+                        'user': user,
+                        'domain': current_site.domain,
+                        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                        'token': default_token_generator.make_token(user)
+                    }
+                )
+                email_msg = EmailMessage(
+                    'Activate your account',
+                    message,
+                    to=[user.email]
+                )
+                email_msg.send()
+
+                # Registration success → redirect to login with ?command=verification
+                return redirect(f"/accounts/login/?command=verification&email={user.email}")
+
+        else:
+            form = RegistrationForm()
+
+        return render(request, 'accounts/register.html', {'form': form})
+
+def login(request):
+
+    if request.user.is_authenticated:
+        return redirect('home')
+    else:
+        if request.method == 'POST':
+            form = LoginForm(request.POST)
+            if form.is_valid():
+                email = form.cleaned_data.get('email')
+                password = form.cleaned_data.get('password')
+                user = authenticate(request, username=email, password=password)
+                if user is not None:
+                    auth_login(request, user)
+                    messages.success(request, f'Welcome {user.first_name}!')
+                    return redirect('dashboard')
+                else:
+                    messages.error(request, 'Invalid email or password.')
+                    return redirect('login')
+                    
+        else:
+            form = LoginForm()
+
+        context = {
+            'form': form
+        }
+        return render(request, 'accounts/login.html', context)
+
+@login_required
+def logout(request):
+    auth_logout(request)
+    return redirect('home')
+
+def activate(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = Accounts._default_manager.get(pk=uid)
+    except (ValueError, OverflowError, TypeError, Accounts.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, 'Congratulations! Your account is activated.')
+        return redirect('login')
+    else:
+        messages.error(request, 'Invalid activation link.')
+        return redirect('register')
+    
+@login_required
+def dashboard(request):
+    return render(request, 'dashboard/dashboard.html')
+
+def forgot_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        if Accounts.objects.filter(email=email).exists():
+            user = Accounts.objects.get(email=email)
+
+            # Send password reset email
+            current_site = get_current_site(request)
+            message = render_to_string(
+                'accounts/password_reset_email.html',
+                {
+                    'user': user,
+                    'domain': current_site.domain,
+                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                    'token': default_token_generator.make_token(user)
+                }
+            )
+            email_msg = EmailMessage(
+                'Reset your password',
+                message,
+                to=[user.email]
+            )
+            email_msg.send()
+
+            messages.success(request, 'Password reset link has been sent to your email.')
+            return redirect('login')
+        else:
+            messages.error(request, 'No account found with that email address.')
+            return redirect('forgot_password')
+    return render(request, 'accounts/forgot_password.html')
+
+def password_reset_confirm(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = Accounts._default_manager.get(pk=uid)
+    except (ValueError, OverflowError, TypeError, Accounts.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        request.session['uid']  = uid
+        messages.success(request, 'Please reset your password.')
+        return redirect('resetPassword')
+    else:
+        messages.error(request, 'Invalid password reset link.')
+        return redirect('forgot_password')
+
+def resetPassword(request):
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
+            return redirect('resetPassword')
+
+        uid = request.session.get('uid')
+        if uid is None:
+            messages.error(request, 'Session expired. Please try the password reset process again.')
+            return redirect('forgot_password')
+
+        try:
+            user = Accounts._default_manager.get(pk=uid)
+            user.set_password(password)
+            user.save()
+            messages.success(request, 'Your password has been reset successfully. You can now log in with your new password.')
+            return redirect('login')
+        except Accounts.DoesNotExist:
+            messages.error(request, 'User does not exist.')
+            return redirect('forgot_password')
+    return render(request, 'accounts/reset_password.html')

@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load socialaccount %}
+
+{% block content %}
+<section class="min-vh-100 py-5" style="background-color: #f8f9fa;">
+  <div class="container py-5 h-100">
+    <div class="row justify-content-center align-items-center h-100">
+      <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+        <div class="card shadow-sm border-0 rounded-4">
+          <div class="card-body p-5">
+
+            <!-- Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == 'success' %}
+                    <div class="alert alert-success">
+                        <p>{{ message }}</p>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-danger">
+                        <p>{{ message }}</p>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            <!-- Header -->
+            <div class="mb-4 text-center">
+              <h3 class="fw-bold">Sign Up</h3>
+              <p class="text-muted">Create your account to get started</p>
+            </div>
+
+            <!-- Django form -->
+            <form action="{% url 'register' %}" method="POST">
+              {% csrf_token %}
+
+              <div class="row g-3 mb-3">
+                <div class="col">
+                  <label class="form-label">First Name</label>
+                  {{ form.first_name }}
+                </div>
+                <div class="col">
+                  <label class="form-label">Last Name</label>
+                  {{ form.last_name }}
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Email</label>
+                {{ form.email }}
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Phone Number</label>
+                {{ form.phone_no }}
+              </div>
+
+              <div class="row g-3 mb-3">
+                <div class="col">
+                  <label class="form-label">Password</label>
+                  {{ form.password }}
+                </div>
+                <div class="col">
+                  <label class="form-label">Confirm Password</label>
+                  {{ form.confirm_password }}
+                </div>
+              </div>
+
+              {% if form.errors %}
+              <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+                {% for field in form %}
+                  {% for error in field.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                {% endfor %}
+              </div>
+              {% endif %}
+
+              <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-primary btn-lg">Register</button>
+              </div>
+
+              <div class="text-center mb-3 text-muted">or</div>
+
+              <!-- Google login -->
+              <div class="d-grid">
+                <a href="{% provider_login_url 'google' process='login' %}?next=/" 
+                  class="btn btn-outline-dark btn-lg d-flex align-items-center justify-content-center">
+                    <img src="{% static 'images/icons/google-logo.webp' %}" 
+                        alt="Google" style="width:20px;margin-right:10px;">
+                    Continue with Google
+                </a>
+              </div>
+
+            </form>
+
+            <!-- Login link -->
+            <p class="text-center mt-4 text-muted">
+              Already have an account? <a href="{% url 'login' %}" class="text-decoration-none">Log In</a>
+            </p>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.btn-outline-dark:hover {
+    background-color: #f1f1f1;
+}
+
+.card {
+    border-radius: 1rem;
+}
+
+</style>
+{% endblock %}

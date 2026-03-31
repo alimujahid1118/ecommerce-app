@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load socialaccount %}
+
+{% block content %}
+
+{% if request.GET.command == 'verification' %}
+<section class="min-vh-50 py-5" style="background-color: #f8f9fa;">
+  <div class="container py-5 h-100">
+    <div class="row justify-content-center align-items-center h-100">
+      <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+        <div class="alert alert-info text-center shadow-sm border-0 rounded-4">
+          An email was sent to your inbox. Please verify to continue with login.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% else %}
+
+<section class="min-vh-100 py-5" style="background-color: #f8f9fa;">
+  <div class="container py-5 h-100">
+    <div class="row justify-content-center align-items-center h-100">
+      <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+        <div class="card shadow-sm border-0 rounded-4">
+          <div class="card-body p-5">
+
+            <!-- Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == 'success' %}
+                    <div class="alert alert-success my-4">
+                        <p>{{ message }}</p>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-danger">
+                        <p>{{ message }}</p>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            <!-- Header -->
+            <div class="mb-4 text-center">
+              <h3 class="fw-bold">Sign In</h3>
+              <p class="text-muted">Enter your credentials to access your account</p>
+            </div>
+
+            <!-- Django login form -->
+            <form action="{% url 'login' %}" method="POST">
+              {% csrf_token %}
+
+              <div class="mb-3">
+                <label class="form-label">Email</label>
+                {{ form.email }}
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Password</label>
+                {{ form.password }}
+              </div>
+
+              <div class="mb-3 text-end">
+                <a href="{% url 'forgot_password' %}" class="text-decoration-none">Forgot Password?</a>
+              </div>
+
+              <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-primary btn-lg">Log in</button>
+              </div>
+
+              <div class="text-center mb-3 text-muted">or</div>
+
+              <!-- Google login -->
+              <div class="d-grid">
+                <a href="{% provider_login_url 'google' process='login' %}?next=/" 
+                  class="btn btn-outline-dark btn-lg d-flex align-items-center justify-content-center">
+                    <img src="{% static 'images/icons/google-logo.webp' %}" 
+                         alt="Google" style="width:20px;margin-right:10px;">
+                    Continue with Google
+                </a>
+              </div>
+
+              {% if form.errors %}
+              <div class="alert alert-danger mt-3">
+                {{ form.non_field_errors }}
+                {% for field in form %}
+                  {% for error in field.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                {% endfor %}
+              </div>
+              {% endif %}
+
+            </form>
+
+            <!-- Register link -->
+            <p class="text-center mt-4 text-muted">
+              Don't have an account? <a href="{% url 'account_signup' %}" class="text-decoration-none">Sign up here</a>.
+            </p>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endif %}
+
+<style>
+.btn-outline-dark:hover {
+    background-color: #f1f1f1;
+}
+
+.card {
+    border-radius: 1rem;
+}
+
+</style>
+
+{% endblock %}
