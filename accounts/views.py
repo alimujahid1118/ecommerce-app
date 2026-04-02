@@ -1,9 +1,36 @@
+from urllib.parse import urlparse, urlencode
+
 from .models import Accounts
 from django.shortcuts import render, redirect
+from django.urls import resolve, Resolver404, reverse
 from .forms import RegistrationForm, LoginForm
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from carts.models import Cart, CartItem
+from carts.views import _cart_id
+
+
+def _safe_checkout_next_url(request):
+    """If next points at checkout, return canonical checkout URL; else None."""
+    raw = (request.POST.get('next') or request.GET.get('next') or '').strip()
+    if not raw:
+        return None
+    if raw.startswith('//'):
+        return None
+    if '://' in raw:
+        path = urlparse(raw).path or '/'
+    else:
+        if not raw.startswith('/'):
+            return None
+        path = raw.split('?')[0]
+    try:
+        match = resolve(path)
+    except Resolver404:
+        return None
+    if match.url_name != 'checkout':
+        return None
+    return reverse('checkout')
 
 #Verification Email
 from django.contrib.sites.shortcuts import get_current_site
@@ -80,6 +107,7 @@ def login(request):
     if request.user.is_authenticated:
         return redirect('home')
     else:
+        next_param = request.GET.get('next', '') or request.POST.get('next', '')
         if request.method == 'POST':
             form = LoginForm(request.POST)
             if form.is_valid():
@@ -87,18 +115,72 @@ def login(request):
                 password = form.cleaned_data.get('password')
                 user = authenticate(request, username=email, password=password)
                 if user is not None:
+                    try:
+                        # Merge the current anonymous cart into the user's cart.
+                        # This prevents duplicates when a user:
+                        # 1) adds items while logged out
+                        # 2) logs in (items get assigned to the user)
+                        # 3) logs out and adds the same items again
+                        # 4) logs back in (we must increment quantity instead of adding a new row)
+                        session_cart_id = request.session.session_key
+                        if session_cart_id:
+                            cart = Cart.objects.get(cart_id=session_cart_id)
+                            session_cart_items = CartItem.objects.filter(cart=cart, is_active=True)
+
+                            for session_item in session_cart_items:
+                                session_variation_ids = frozenset(
+                                    session_item.variation.values_list('id', flat=True)
+                                )
+
+                                # Find user's existing items with the same product + exact variation set.
+                                # If duplicates exist (from previous buggy logins), consolidate them into the first match.
+                                user_matches = []
+                                user_items = CartItem.objects.filter(
+                                    user=user,
+                                    product=session_item.product,
+                                    is_active=True,
+                                )
+                                for existing in user_items:
+                                    existing_variation_ids = frozenset(
+                                        existing.variation.values_list('id', flat=True)
+                                    )
+                                    if existing_variation_ids == session_variation_ids:
+                                        user_matches.append(existing)
+
+                                if user_matches:
+                                    user_match = user_matches[0]
+                                    for dup in user_matches[1:]:
+                                        user_match.quantity += dup.quantity
+                                        dup.delete()
+
+                                    user_match.quantity += session_item.quantity
+                                    # Keep the merged quantity tied to the *current* session cart.
+                                    user_match.cart = cart
+                                    user_match.save(update_fields=['quantity', 'cart'])
+                                    session_item.delete()
+                                else:
+                                    session_item.user = user
+                                    session_item.save(update_fields=['user'])
+                    except:
+                        pass
                     auth_login(request, user)
                     messages.success(request, f'Welcome {user.first_name}!')
+                    checkout_next = _safe_checkout_next_url(request)
+                    if checkout_next:
+                        return redirect(checkout_next)
                     return redirect('dashboard')
                 else:
                     messages.error(request, 'Invalid email or password.')
+                    if next_param:
+                        return redirect(f"{reverse('login')}?{urlencode({'next': next_param})}")
                     return redirect('login')
                     
         else:
             form = LoginForm()
 
         context = {
-            'form': form
+            'form': form,
+            'next': next_param,
         }
         return render(request, 'accounts/login.html', context)
 
