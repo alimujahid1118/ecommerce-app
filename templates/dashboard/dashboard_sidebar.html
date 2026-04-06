@@ -2,9 +2,10 @@
   <!-- SIDEBAR -->
   <ul class="list-group">
     <a class="list-group-item" href="{% url 'dashboard' %}">Dashboard</a>
-    <a class="list-group-item" href="#">My Orders</a>
-    <a class="list-group-item" href="#">Edit Profile</a>
-    <a class="list-group-item" href="#">Change Password</a>
+    <a class="list-group-item" href="{% url 'my_orders' %}">My Orders</a>
+    <a class="list-group-item" href="{% url 'edit_profile' %}">Edit Profile</a>
+    <a class="list-group-item" href="{% url 'saved_payment_methods' %}">Saved payment methods</a>
+    <a class="list-group-item" href="{% url 'forgot_password' %}">Change Password</a>
   </ul>
   <br>
   <a class="btn btn-primary btn-block" href="{% url 'logout' %}"> 

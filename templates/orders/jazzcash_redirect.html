@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting to JazzCash…</title>
+</head>
+<body>
+  <p>Redirecting to JazzCash… If nothing happens, click Pay.</p>
+  <form id="jc-form" method="post" action="{{ post_url }}">
+    {% for key, value in fields.items %}
+    <input type="hidden" name="{{ key }}" value="{{ value|default:'' }}">
+    {% endfor %}
+    <noscript><button type="submit">Continue to JazzCash</button></noscript>
+  </form>
+  <script>
+    document.getElementById("jc-form").submit();
+  </script>
+</body>
+</html>

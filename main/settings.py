@@ -10,10 +10,24 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# JazzCash hosted checkout — set in environment for real payments.
+# Docs: https://sandbox.jazzcash.com.pk/SandboxDocumentation/
+JAZZCASH_MODE = os.environ.get("JAZZCASH_MODE", "sandbox")
+JAZZCASH_MERCHANT_ID = os.environ.get("JAZZCASH_MERCHANT_ID", "")
+JAZZCASH_PASSWORD = os.environ.get("JAZZCASH_PASSWORD", "")
+JAZZCASH_HASH_KEY = os.environ.get("JAZZCASH_HASHKEY", os.environ.get("JAZZCASH_HASH_KEY", ""))
+JAZZCASH_SANDBOX_URL = os.environ.get(
+    "JAZZCASH_SANDBOX_URL",
+    "https://sandbox.jazzcash.com.pk/CustomerPortal/transactionmanagement/merchantform",
+)
+JAZZCASH_PRODUCTION_URL = os.environ.get("JAZZCASH_PRODUCTION_URL", "")
+JAZZCASH_TXN_EXPIRY_DAYS = int(os.environ.get("JAZZCASH_TXN_EXPIRY_DAYS", "7"))
 
 
 # Quick-start development settings - unsuitable for production
@@ -48,6 +62,7 @@ INSTALLED_APPS = [
     'accounts',
     'store',
     'carts',
+    'orders',
 ]
 
 SOCIALACCOUNT_PROVIDERS = {

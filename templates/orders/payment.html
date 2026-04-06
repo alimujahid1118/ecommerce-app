@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<section class="section-content padding-y bg">
+  <div class="container">
+    <h3 class="mb-4 text-center">Review &amp; pay</h3>
+
+    {% if order.payment %}
+    <div class="alert alert-success text-center">
+      <strong>Already paid.</strong> Payment ID {{ order.payment.payment_id }} · {{ order.payment.payment_method }}
+    </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'payment' %}" id="checkout-pay-form" novalidate>
+      {% csrf_token %}
+
+      <div class="row">
+        <aside class="col-lg-8 d-flex flex-column gap-3">
+
+          <div class="card shadow-sm border-0 mb-3">
+            <div class="card-header bg-white">
+              <h4 class="mb-0">Order summary</h4>
+            </div>
+            <div class="card-body">
+              <p class="mb-1"><strong>Order #</strong> {{ order.order_number }}</p>
+              <p class="mb-1"><strong>Name:</strong> {{ order.first_name }} {{ order.last_name }}</p>
+              <p class="mb-1"><strong>Email:</strong> {{ order.email }}</p>
+              <p class="mb-1"><strong>Phone:</strong> {{ order.phone }}</p>
+              <p class="mb-1"><strong>Address:</strong> {{ order.address_line_1 }} {{ order.address_line_2 }}</p>
+              <p class="mb-1"><strong>City:</strong> {{ order.city }}, {{ order.state }} {{ order.country }}</p>
+              {% if order.order_note %}
+              <p class="mb-0"><strong>Note:</strong> {{ order.order_note }}</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="card shadow-sm border-0 mb-3">
+            <div class="card-header bg-white">
+              <h4 class="mb-0">Billing address</h4>
+            </div>
+            <div class="card-body">
+              <p class="card-text mb-0">{{ order.first_name }} {{ order.last_name }}</p>
+              <p class="card-text">{{ order.email }}</p>
+              <p class="card-text">{{ order.phone }}</p>
+              <p class="card-text">{{ order.address_line_1 }}</p>
+              {% if order.address_line_2 %}
+              <p class="card-text">{{ order.address_line_2 }}</p>
+              {% endif %}
+              <p class="card-text">{{ order.city }}, {{ order.state }} {{ order.country }}</p>
+            </div>
+          </div>
+
+          <div class="card shadow-sm border-0 mb-3">
+            <div class="card-header bg-white">
+              <h4 class="mb-0">Payment</h4>
+            </div>
+            <div class="card-body">
+              {% if order.payment %}
+              <p class="mb-1"><strong>Payment ID:</strong> {{ order.payment.payment_id }}</p>
+              <p class="mb-1"><strong>Method:</strong> {{ order.payment.payment_method }}</p>
+              <p class="mb-1"><strong>Amount:</strong> ${{ order.payment.amount_paid }}</p>
+              <p class="mb-0"><strong>Status:</strong> {{ order.payment.status }}</p>
+              {% else %}
+
+              {% if jazzcash_gateway %}
+              <div class="alert alert-info small mb-3">
+                JazzCash merchant credentials are set: choosing <strong>JazzCash</strong> opens the official JazzCash hosted checkout. Bank debit card is still completed in-app (demo) unless you integrate a card gateway separately.
+              </div>
+              {% endif %}
+
+              {% if payment_form.non_field_errors %}
+              <div class="alert alert-danger">{{ payment_form.non_field_errors }}</div>
+              {% endif %}
+
+              {% if has_saved_methods %}
+              <div class="form-group">
+                <label for="{{ payment_form.saved_method.id_for_label }}">Use a saved method</label>
+                {{ payment_form.saved_method }}
+                <small class="form-text text-muted">Choose “Enter new payment details” to use JazzCash or card fields below.</small>
+              </div>
+              <hr class="my-3">
+              {% endif %}
+
+              <div id="new-payment-block">
+                <p class="font-weight-bold small text-uppercase text-muted mb-2">Pay with</p>
+                {% for radio in payment_form.payment_method %}
+                <div class="form-check mb-2">
+                  {{ radio.tag }}
+                  <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                </div>
+                {% endfor %}
+                {% if payment_form.payment_method.errors %}
+                <small class="text-danger d-block">{{ payment_form.payment_method.errors.0 }}</small>
+                {% endif %}
+
+                <div id="jazzcash-fields" class="mt-3">
+                  <label for="{{ payment_form.jazzcash_phone.id_for_label }}">JazzCash mobile number</label>
+                  {{ payment_form.jazzcash_phone }}
+                  {% if payment_form.jazzcash_phone.errors %}
+                  <small class="text-danger d-block">{{ payment_form.jazzcash_phone.errors.0 }}</small>
+                  {% endif %}
+                </div>
+
+                <div id="debit-card-fields" class="mt-3" style="display:none;">
+                  <div class="form-group">
+                    <label for="{{ payment_form.card_number.id_for_label }}">Card number</label>
+                    {{ payment_form.card_number }}
+                    {% if payment_form.card_number.errors %}
+                    <small class="text-danger d-block">{{ payment_form.card_number.errors.0 }}</small>
+                    {% endif %}
+                  </div>
+                  <div class="form-group">
+                    <label for="{{ payment_form.cardholder_name.id_for_label }}">Name on card</label>
+                    {{ payment_form.cardholder_name }}
+                    {% if payment_form.cardholder_name.errors %}
+                    <small class="text-danger d-block">{{ payment_form.cardholder_name.errors.0 }}</small>
+                    {% endif %}
+                  </div>
+                  <div class="form-row">
+                    <div class="col-md-4 form-group">
+                      <label>Expiry (MM)</label>
+                      {{ payment_form.card_exp_month }}
+                    </div>
+                    <div class="col-md-4 form-group">
+                      <label>Expiry (YYYY)</label>
+                      {{ payment_form.card_exp_year }}
+                    </div>
+                    <div class="col-md-4 form-group">
+                      <label for="{{ payment_form.card_cvv.id_for_label }}">CVV</label>
+                      {{ payment_form.card_cvv }}
+                      {% if payment_form.card_cvv.errors %}
+                      <small class="text-danger d-block">{{ payment_form.card_cvv.errors.0 }}</small>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group form-check mt-3">
+                  {{ payment_form.save_payment_method }}
+                  <label class="form-check-label" for="{{ payment_form.save_payment_method.id_for_label }}">{{ payment_form.save_payment_method.label }}</label>
+                </div>
+              </div>
+
+              <p class="text-muted small mb-0 mt-2">
+                <i class="fas fa-lock mr-1"></i> For demo use only. In production, integrate a PCI-compliant gateway; we only store masked card data when you opt in to save.
+              </p>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="card shadow-sm border-0">
+            <div class="card-header bg-white">
+              <h4 class="mb-0">Order items</h4>
+            </div>
+            <div class="card-body">
+              <table class="table table-borderless table-shopping-cart mb-0">
+                <thead class="text-muted">
+                  <tr class="small text-uppercase">
+                    <th>Product</th>
+                    <th width="120">Quantity</th>
+                    <th width="120">Line total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for op in order_products %}
+                  <tr>
+                    <td>
+                      <figure class="itemside align-items-center">
+                        <div class="aside">
+                          {% if op.product.images %}
+                          <img src="{{ op.product.images.url }}" class="img-sm" alt="">
+                          {% endif %}
+                        </div>
+                        <figcaption class="info">
+                          <span class="title text-dark">{{ op.product.product_name }}</span>
+                        </figcaption>
+                      </figure>
+                    </td>
+                    <td>{{ op.quantity }}</td>
+                    <td>
+                      <div class="price-wrap">
+                        <var class="price">${{ op.line_total|floatformat:2 }}</var>
+                        <small class="text-muted">${{ op.product_price|floatformat:2 }} each</small>
+                      </div>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="3" class="text-muted">No line items.</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </aside>
+
+        <aside class="col-lg-4">
+          <div class="card shadow-sm border-0 sticky-top" style="top:1rem;">
+            <div class="card-body">
+              <h5 class="mb-3">Totals</h5>
+              <dl class="dlist-align">
+                <dt>Subtotal:</dt>
+                <dd class="text-right">${{ total|floatformat:2 }}</dd>
+              </dl>
+              <dl class="dlist-align">
+                <dt>Tax:</dt>
+                <dd class="text-right">${{ tax|floatformat:2 }}</dd>
+              </dl>
+              <dl class="dlist-align">
+                <dt>Grand total:</dt>
+                <dd class="text-right text-dark b">
+                  <strong>${{ grand_total|floatformat:2 }}</strong>
+                </dd>
+              </dl>
+              <hr />
+              <p class="text-center mb-3">
+                <img src="{% static 'images/misc/payments.png' %}" height="26" alt="" />
+              </p>
+              {% if not order.payment %}
+              <button type="submit" class="btn btn-primary btn-block">Pay now</button>
+              <a href="{% url 'saved_payment_methods' %}" class="btn btn-outline-secondary btn-block btn-sm mt-2">Manage saved methods</a>
+              {% endif %}
+            </div>
+          </div>
+        </aside>
+      </div>
+    </form>
+  </div>
+</section>
+
+{% if not order.payment %}
+<script>
+(function() {
+  var savedSelect = document.getElementById('id_saved_method');
+  var newBlock = document.getElementById('new-payment-block');
+  var jazz = document.getElementById('jazzcash-fields');
+  var card = document.getElementById('debit-card-fields');
+  var radios = document.querySelectorAll('input[name="payment_method"]');
+
+  function paymentType() {
+    for (var i = 0; i < radios.length; i++) {
+      if (radios[i].checked) return radios[i].value;
+    }
+    return 'jazzcash';
+  }
+
+  function toggleMethodFields() {
+    if (!jazz || !card) return;
+    var pt = paymentType();
+    if (pt === 'debit_card') {
+      jazz.style.display = 'none';
+      card.style.display = 'block';
+    } else {
+      jazz.style.display = 'block';
+      card.style.display = 'none';
+    }
+  }
+
+  function toggleSaved() {
+    if (!savedSelect || !newBlock) return;
+    var v = savedSelect.value;
+    if (v && v !== '') {
+      newBlock.style.display = 'none';
+    } else {
+      newBlock.style.display = 'block';
+      toggleMethodFields();
+    }
+  }
+
+  if (savedSelect) {
+    savedSelect.addEventListener('change', toggleSaved);
+    toggleSaved();
+  } else {
+    toggleMethodFields();
+  }
+
+  for (var j = 0; j < radios.length; j++) {
+    radios[j].addEventListener('change', toggleMethodFields);
+  }
+  toggleMethodFields();
+})();
+</script>
+{% endif %}
+
+{% endblock %}

@@ -1,14 +1,22 @@
 from urllib.parse import urlparse, urlencode
 
-from .models import Accounts
-from django.shortcuts import render, redirect
+from .models import Accounts, SavedPaymentMethod
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import resolve, Resolver404, reverse
-from .forms import RegistrationForm, LoginForm
+from .forms import (
+    LoginForm,
+    RegistrationForm,
+    SavedPaymentMethodForm,
+    UserProfileForm,
+)
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Sum
+
 from carts.models import Cart, CartItem
 from carts.views import _cart_id
+from orders.models import Order
 
 
 def _safe_checkout_next_url(request):
@@ -207,7 +215,82 @@ def activate(request, uidb64, token):
     
 @login_required
 def dashboard(request):
-    return render(request, 'dashboard/dashboard.html')
+    orders = Order.objects.filter(user=request.user, is_ordered=True)
+    total_orders = orders.count()
+    total_spent = orders.aggregate(s=Sum("order_total"))["s"] or 0
+    recent_orders = (
+        orders.select_related("payment").order_by("-created_at")[:5]
+    )
+    unpaid_orders_count = Order.objects.filter(
+        user=request.user,
+        is_ordered=True,
+        status="New",
+        payment__isnull=True,
+    ).count()
+    context = {
+        "orders": orders,
+        "total_orders": total_orders,
+        "total_spent": total_spent,
+        "recent_orders": recent_orders,
+        "unpaid_orders_count": unpaid_orders_count,
+    }
+    return render(request, "dashboard/dashboard.html", context)
+
+
+@login_required
+def edit_profile(request):
+    if request.method == "POST":
+        form = UserProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your profile has been updated.")
+            return redirect("edit_profile")
+    else:
+        form = UserProfileForm(instance=request.user)
+
+    return render(
+        request,
+        "dashboard/edit_profile.html",
+        {"form": form},
+    )
+
+
+@login_required
+def saved_payment_methods(request):
+    methods = SavedPaymentMethod.objects.filter(user=request.user)
+    unpaid_orders_count = Order.objects.filter(
+        user=request.user,
+        is_ordered=True,
+        status="New",
+        payment__isnull=True,
+    ).count()
+    if request.method == "POST":
+        form = SavedPaymentMethodForm(request.POST, user=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Payment method saved.")
+            return redirect("saved_payment_methods")
+    else:
+        form = SavedPaymentMethodForm(user=request.user)
+    return render(
+        request,
+        "dashboard/saved_payment_methods.html",
+        {
+            "methods": methods,
+            "form": form,
+            "unpaid_orders_count": unpaid_orders_count,
+        },
+    )
+
+
+@login_required
+def delete_saved_payment_method(request, pk):
+    obj = get_object_or_404(SavedPaymentMethod, pk=pk, user=request.user)
+    if request.method == "POST":
+        obj.delete()
+        messages.success(request, "Payment method removed.")
+    return redirect("saved_payment_methods")
+
 
 def forgot_password(request):
     if request.method == 'POST':

@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<section class="section-content padding-y bg">
+  <div class="container">
+    <div class="row">
+
+      {% include 'dashboard/dashboard_sidebar.html' %}
+
+      <main class="col-md-9">
+
+        {% if messages %}
+          {% for message in messages %}
+            {% if message.tags == 'success' %}
+              <div class="alert alert-success"><p class="mb-0">{{ message }}</p></div>
+            {% else %}
+              <div class="alert alert-danger"><p class="mb-0">{{ message }}</p></div>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h4 class="mb-1">My orders</h4>
+            <p class="text-muted small mb-0">Track purchases and update shipping details while your order is still new.</p>
+          </div>
+        </div>
+
+        <div class="row">
+          {% for order in orders %}
+            <div class="col-md-6 col-lg-4 mb-4">
+              <div class="card shadow-sm border h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                  <span class="font-weight-bold text-truncate" title="{{ order.order_number }}">{{ order.order_number }}</span>
+                  {% if order.status == 'New' %}
+                    <span class="badge badge-primary">New</span>
+                  {% elif order.status == 'Accepted' %}
+                    <span class="badge badge-info">Accepted</span>
+                  {% elif order.status == 'Completed' %}
+                    <span class="badge badge-success">Completed</span>
+                  {% elif order.status == 'Cancelled' %}
+                    <span class="badge badge-secondary">Cancelled</span>
+                  {% else %}
+                    <span class="badge badge-light border">{{ order.get_status_display }}</span>
+                  {% endif %}
+                </div>
+                <div class="card-body">
+                  <ul class="list-unstyled small mb-0">
+                    <li class="d-flex justify-content-between py-1 border-bottom">
+                      <span class="text-muted">Placed</span>
+                      <span>{{ order.created_at|date:"M j, Y" }}</span>
+                    </li>
+                    <li class="d-flex justify-content-between py-1 border-bottom">
+                      <span class="text-muted">Items</span>
+                      <span>{{ order.item_count }}</span>
+                    </li>
+                    <li class="d-flex justify-content-between py-1 border-bottom">
+                      <span class="text-muted">Subtotal</span>
+                      <span>${{ order.subtotal|floatformat:2 }}</span>
+                    </li>
+                    <li class="d-flex justify-content-between py-1 border-bottom">
+                      <span class="text-muted">Tax</span>
+                      <span>${{ order.tax|floatformat:2 }}</span>
+                    </li>
+                    <li class="d-flex justify-content-between py-2">
+                      <span class="font-weight-bold">Total</span>
+                      <span class="font-weight-bold text-dark">${{ order.order_total|floatformat:2 }}</span>
+                    </li>
+                  </ul>
+                </div>
+                <div class="card-footer bg-white border-top-0 pt-0">
+                  {% if not order.payment_id and order.status == 'New' %}
+                    <a href="{% url 'pay_order' order.id %}" class="btn btn-success btn-sm btn-block mb-2">Pay now</a>
+                  {% elif order.payment_id %}
+                    <p class="text-muted small text-center mb-2 mb-md-0">Paid · {{ order.payment.payment_method }}</p>
+                  {% endif %}
+                  {% if order.status == 'New' %}
+                    <a href="{% url 'edit_order_details' order.id %}" class="btn btn-outline-primary btn-sm btn-block">
+                      Change details
+                    </a>
+                  {% else %}
+                    <p class="text-muted small text-center mb-0">Details can only be changed while status is <strong>New</strong>.</p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <div class="col-12">
+              <div class="card border bg-light">
+                <div class="card-body text-center py-5">
+                  <p class="text-muted mb-3">You have not placed any orders yet.</p>
+                  <a href="{% url 'view_products' %}" class="btn btn-primary">Browse products</a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+      </main>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}

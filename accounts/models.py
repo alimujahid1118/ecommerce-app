@@ -64,3 +64,47 @@ class Accounts(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name_plural = 'Accounts'
         ordering = ['-date_joined']
+
+
+class SavedPaymentMethod(models.Model):
+    """User-saved JazzCash or card metadata (never store full card numbers)."""
+
+    METHOD_JAZZCASH = "jazzcash"
+    METHOD_DEBIT_CARD = "debit_card"
+    METHOD_CHOICES = (
+        (METHOD_JAZZCASH, "JazzCash"),
+        (METHOD_DEBIT_CARD, "Bank debit card"),
+    )
+
+    user = models.ForeignKey(
+        Accounts,
+        on_delete=models.CASCADE,
+        related_name="saved_payment_methods",
+    )
+    method_type = models.CharField(max_length=20, choices=METHOD_CHOICES)
+    label = models.CharField(max_length=120, blank=True)
+    is_default = models.BooleanField(default=False)
+
+    jazzcash_phone = models.CharField(max_length=20, blank=True)
+
+    card_last_four = models.CharField(max_length=4, blank=True)
+    cardholder_name = models.CharField(max_length=120, blank=True)
+    card_exp_month = models.PositiveSmallIntegerField(null=True, blank=True)
+    card_exp_year = models.PositiveSmallIntegerField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-is_default", "-created_at"]
+
+    def __str__(self):
+        if self.method_type == self.METHOD_JAZZCASH:
+            return f"JazzCash {self.jazzcash_phone or self.label or self.pk}"
+        return f"Card •••• {self.card_last_four}" if self.card_last_four else f"Card {self.pk}"
+
+    def display_name(self):
+        if self.label:
+            return self.label
+        if self.method_type == self.METHOD_JAZZCASH:
+            return f"JazzCash {self.jazzcash_phone}"
+        return f"Debit card •••• {self.card_last_four}"

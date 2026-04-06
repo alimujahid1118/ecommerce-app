@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<section class="section-content padding-y bg">
+  <div class="container">
+    <div class="row">
+
+      {% include 'dashboard/dashboard_sidebar.html' %}
+
+      <main class="col-md-9">
+
+        {% if messages %}
+          {% for message in messages %}
+            {% if message.tags == 'success' %}
+              <div class="alert alert-success"><p class="mb-0">{{ message }}</p></div>
+            {% else %}
+              <div class="alert alert-danger"><p class="mb-0">{{ message }}</p></div>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        <nav class="mb-3" aria-label="breadcrumb">
+          <ol class="breadcrumb bg-transparent px-0 py-0 mb-0 small">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Saved payment methods</li>
+          </ol>
+        </nav>
+
+        {% if unpaid_orders_count %}
+        <div class="alert alert-info d-flex flex-wrap justify-content-between align-items-center mb-4">
+          <span class="mb-0">Saved methods appear on the payment page. You have {{ unpaid_orders_count }} unpaid order{{ unpaid_orders_count|pluralize }}—open <a href="{% url 'my_orders' %}">My orders</a> and choose <strong>Pay now</strong>, then pick JazzCash, debit card, or a saved method.</span>
+        </div>
+        {% endif %}
+
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white py-3">
+            <h4 class="mb-1">Saved payment methods</h4>
+            <p class="text-muted small mb-0">Use these at checkout or add new ones here. We never store full card numbers—only the last four digits and expiry.</p>
+          </div>
+          <div class="card-body p-0">
+            {% if methods %}
+            <div class="table-responsive">
+              <table class="table table-hover mb-0 small">
+                <thead class="thead-light text-muted text-uppercase">
+                  <tr>
+                    <th class="border-0 pl-4">Method</th>
+                    <th class="border-0">Details</th>
+                    <th class="border-0">Default</th>
+                    <th class="border-0 text-right pr-4">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for m in methods %}
+                  <tr>
+                    <td class="pl-4 align-middle">
+                      {% if m.method_type == 'jazzcash' %}
+                        <span class="badge badge-info">JazzCash</span>
+                      {% else %}
+                        <span class="badge badge-secondary">Debit card</span>
+                      {% endif %}
+                    </td>
+                    <td class="align-middle">{{ m.display_name }}</td>
+                    <td class="align-middle">
+                      {% if m.is_default %}<span class="badge badge-success">Default</span>{% else %}—{% endif %}
+                    </td>
+                    <td class="text-right pr-4 align-middle">
+                      <form method="post" action="{% url 'delete_saved_payment_method' m.pk %}" class="d-inline" onsubmit="return confirm('Remove this saved payment method?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                      </form>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+            <div class="text-center text-muted py-5 px-3">
+              <p class="mb-0">No saved methods yet. Add one below or save at checkout.</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white py-3">
+            <h5 class="mb-0">Add payment method</h5>
+          </div>
+          <div class="card-body">
+            <form method="post" action="">
+              {% csrf_token %}
+              {% if form.non_field_errors %}
+                <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+              {% endif %}
+
+              <div class="form-group">
+                <label>Type</label>
+                {{ form.method_type }}
+                {% if form.method_type.errors %}<small class="text-danger d-block">{{ form.method_type.errors.0 }}</small>{% endif %}
+              </div>
+
+              <div class="form-group">
+                <label>Label <span class="text-muted">(optional)</span></label>
+                {{ form.label }}
+              </div>
+
+              <div id="profile-jazzcash-fields">
+                <div class="form-group">
+                  <label>JazzCash mobile</label>
+                  {{ form.jazzcash_phone }}
+                  {% if form.jazzcash_phone.errors %}<small class="text-danger d-block">{{ form.jazzcash_phone.errors.0 }}</small>{% endif %}
+                </div>
+              </div>
+
+              <div id="profile-card-fields" style="display:none;">
+                <div class="form-group">
+                  <label>Card number</label>
+                  {{ form.card_number }}
+                  {% if form.card_number.errors %}<small class="text-danger d-block">{{ form.card_number.errors.0 }}</small>{% endif %}
+                </div>
+                <div class="form-row">
+                  <div class="col-md-6 form-group">
+                    <label>Name on card</label>
+                    {{ form.cardholder_name }}
+                  </div>
+                  <div class="col-md-3 form-group">
+                    <label>Expiry month</label>
+                    {{ form.card_exp_month }}
+                  </div>
+                  <div class="col-md-3 form-group">
+                    <label>Expiry year</label>
+                    {{ form.card_exp_year }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group form-check">
+                {{ form.is_default }}
+                <label class="form-check-label" for="{{ form.is_default.id_for_label }}">Set as default</label>
+              </div>
+
+              <button type="submit" class="btn btn-primary">Save payment method</button>
+            </form>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+</section>
+
+<script>
+(function() {
+  var typeSelect = document.getElementById('id_method_type');
+  var jazz = document.getElementById('profile-jazzcash-fields');
+  var card = document.getElementById('profile-card-fields');
+  function sync() {
+    if (!typeSelect || !jazz || !card) return;
+    if (typeSelect.value === 'debit_card') {
+      jazz.style.display = 'none';
+      card.style.display = 'block';
+    } else {
+      jazz.style.display = 'block';
+      card.style.display = 'none';
+    }
+  }
+  if (typeSelect) {
+    typeSelect.addEventListener('change', sync);
+    sync();
+  }
+})();
+</script>
+
+{% endblock %}
