@@ -76,7 +76,7 @@
 
               <!-- Google login -->
               <div class="d-grid">
-                <a href="{% provider_login_url 'google' process='login' %}?next=/" 
+                <a href="{% provider_login_url 'google' process='login' next=next|default:'/' %}" 
                   class="btn btn-outline-dark btn-lg d-flex align-items-center justify-content-center">
                     <img src="{% static 'images/icons/google-logo.webp' %}" 
                          alt="Google" style="width:20px;margin-right:10px;">
