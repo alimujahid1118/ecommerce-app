@@ -31,3 +31,13 @@ class ProductVariation(models.Model):
 
     def __str__(self):
         return self.variation_value
+    
+class Reviews(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    user = models.CharField(max_length=100)
+    review_title = models.CharField(max_length=200)
+    review_text = models.TextField()
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Review by {self.user} on {self.product.product_name}"

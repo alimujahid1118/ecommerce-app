@@ -1,4 +1,6 @@
-{% extends 'base.html' %} {% load static %} {% block content %}
+{% extends 'base.html' %} 
+{% load static %} 
+{% block content %}
 
 <!-- ========================= SECTION PAGETOP ========================= -->
 <section class="section-pagetop bg">
@@ -38,70 +40,55 @@
               </ul>
             </div>
           </article>
+          <form action="{% url 'view_products' %}" method="get">
+            <!-- Sizes -->
+            <article class="filter-group">
+              <header class="card-header">
+                <h6 class="title">Sizes</h6>
+              </header>
 
-          <!-- Sizes -->
-          <article class="filter-group">
-            <header class="card-header">
-              <h6 class="title">Sizes</h6>
-            </header>
+              <div class="card-body">
+                <label class="checkbox-btn">
+                  <input type="checkbox" name="size" value="Small"/>
+                  <span class="btn btn-light">Small</span>
+                </label>
 
-            <div class="card-body">
-              <label class="checkbox-btn">
-                <input type="checkbox" />
-                <span class="btn btn-light">XS</span>
-              </label>
+                <label class="checkbox-btn">
+                  <input type="checkbox" name="size" value="Medium"/>
+                  <span class="btn btn-light">Medium</span>
+                </label>
 
-              <label class="checkbox-btn">
-                <input type="checkbox" />
-                <span class="btn btn-light">SM</span>
-              </label>
-
-              <label class="checkbox-btn">
-                <input type="checkbox" />
-                <span class="btn btn-light">LG</span>
-              </label>
-
-              <label class="checkbox-btn">
-                <input type="checkbox" />
-                <span class="btn btn-light">XXL</span>
-              </label>
-            </div>
-          </article>
-
-          <!-- Price -->
-          <article class="filter-group">
-            <header class="card-header">
-              <h6 class="title">Price range</h6>
-            </header>
-
-            <div class="card-body">
-              <div class="form-row">
-                <div class="form-group col-md-6">
-                  <label>Min</label>
-                  <select class="form-control">
-                    <option>$0</option>
-                    <option>$50</option>
-                    <option>$100</option>
-                    <option>$150</option>
-                    <option>$200</option>
-                  </select>
-                </div>
-
-                <div class="form-group col-md-6">
-                  <label>Max</label>
-                  <select class="form-control">
-                    <option>$50</option>
-                    <option>$100</option>
-                    <option>$200</option>
-                    <option>$500</option>
-                    <option>$1000+</option>
-                  </select>
-                </div>
+                <label class="checkbox-btn">
+                  <input type="checkbox" name="size" value="Large"/>
+                  <span class="btn btn-light">Large</span>
+                </label>
               </div>
+            </article>
 
-              <button class="btn btn-block btn-primary">Apply</button>
-            </div>
-          </article>
+            <!-- Price -->
+            <article class="filter-group">
+              <header class="card-header">
+                <h6 class="title">Price range</h6>
+              </header>
+
+              <div class="card-body">
+                <div class="form-row">
+                  <div class="form-group col-md-6">
+                    <label>Min</label>
+                    <input type="number" class="form-control" name="min_price" placeholder="$0" />
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label>Max</label>
+                    <input type="number" class="form-control" name="max_price" placeholder="$1000+" />
+                  </div>
+                </div>
+
+                <button class="btn btn-block btn-primary" type="submit">
+                  Apply
+                </button>
+              </div>
+            </article>
+          </form>
         </div>
       </aside>
 
@@ -114,7 +101,7 @@
         </header>
 
         <div class="row">
-          {% if products %}
+          {% if products %} 
           {% for product in products %}
           <!-- PRODUCT CARD (duplicate later yourself) -->
           <div class="col-md-4">
@@ -144,13 +131,19 @@
               </figcaption>
             </figure>
           </div>
-          {% endfor %}
+          {% endfor %} 
           {% else %}
-          <div class="col-12 d-flex justify-content-center align-items-center py-5">
-            <div class="card border-0 bg-light p-5 text-center" style="max-width: 500px;">
+          <div
+            class="col-12 d-flex justify-content-center align-items-center py-5"
+          >
+            <div
+              class="card border-0 bg-light p-5 text-center"
+              style="max-width: 500px"
+            >
               <h3 class="mb-3">Oops! Nothing Found</h3>
               <p class="text-muted mb-4">
-                We couldn't find any products matching your search. Try adjusting your filters or search terms.
+                We couldn't find any products matching your search. Try
+                adjusting your filters or search terms.
               </p>
               <a href="{% url 'view_products' %}" class="btn btn-dark btn-lg">
                 Back to Store
@@ -178,7 +171,6 @@
               <a class="page-link">Previous</a>
             </li>
             {% endif %} 
-            
             {% for page_num in products.paginator.page_range %} 
             {% if products.number == page_num %}
             <li class="page-item active">
@@ -191,9 +183,13 @@
               </a>
             </li>
             {% endif %} 
-            {% endfor %}
+            {% endfor %} 
             {% if products.has_next %}
-            <li class="page-item"><a class="page-link" href="?page={{products.next_page_number}}">Next</a></li>
+            <li class="page-item">
+              <a class="page-link" href="?page={{products.next_page_number}}"
+                >Next</a
+              >
+            </li>
             {% else %}
             <li class="page-item disabled"><a class="page-link">Next</a></li>
             {% endif %}
