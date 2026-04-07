@@ -39,7 +39,26 @@ SECRET_KEY = 'django-insecure-3fxo$c773rb!w08ve(40zr9@h-n2alvqy$tz%jbc=^z4)+$ca-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['djangoecomapp.pythonanywhere.com', 'localhost', '127.0.0.1']
+# Production + local dev. Override the full list with DJANGO_ALLOWED_HOSTS if needed.
+_DEFAULT_ALLOWED_HOSTS = (
+    "djangoecomapp.pythonanywhere.com,127.0.0.1,localhost"
+)
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.environ.get("DJANGO_ALLOWED_HOSTS", _DEFAULT_ALLOWED_HOSTS).split(",")
+    if h.strip()
+]
+
+# HTTPS on PythonAnywhere (behind reverse proxy)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CSRF_TRUSTED_ORIGINS = [
+    "https://djangoecomapp.pythonanywhere.com",
+]
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS += [
+        "http://127.0.0.1:8000",
+        "http://localhost:8000",
+    ]
 
 SITE_ID = 2
 

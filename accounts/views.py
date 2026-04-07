@@ -86,11 +86,13 @@ def register(request):
 
                 # Send activation email
                 current_site = get_current_site(request)
+                scheme = "https" if request.is_secure() else "http"
                 message = render_to_string(
                     'accounts/activation_email.html',
                     {
                         'user': user,
                         'domain': current_site.domain,
+                        'scheme': scheme,
                         'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                         'token': default_token_generator.make_token(user)
                     }
@@ -300,11 +302,13 @@ def forgot_password(request):
 
             # Send password reset email
             current_site = get_current_site(request)
+            scheme = "https" if request.is_secure() else "http"
             message = render_to_string(
                 'accounts/password_reset_email.html',
                 {
                     'user': user,
                     'domain': current_site.domain,
+                    'scheme': scheme,
                     'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                     'token': default_token_generator.make_token(user)
                 }
