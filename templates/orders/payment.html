@@ -2,7 +2,7 @@
 {% load static %}
 {% block content %}
 
-<section class="section-content padding-y bg">
+<section class="section-content padding-y bg px-2 px-md-0">
   <div class="container">
     <h3 class="mb-4 text-center">Review &amp; pay</h3>
 
@@ -15,8 +15,8 @@
     <form method="post" action="{% url 'payment' %}" id="checkout-pay-form" novalidate>
       {% csrf_token %}
 
-      <div class="row">
-        <aside class="col-lg-8 d-flex flex-column gap-3">
+      <div class="row payment-page-row">
+        <aside class="col-12 col-lg-8 d-flex flex-column gap-3">
 
           <div class="card shadow-sm border-0 mb-3">
             <div class="card-header bg-white">
@@ -153,7 +153,8 @@
             <div class="card-header bg-white">
               <h4 class="mb-0">Order items</h4>
             </div>
-            <div class="card-body">
+            <div class="card-body p-2 p-md-3">
+              <div class="table-responsive">
               <table class="table table-borderless table-shopping-cart mb-0">
                 <thead class="text-muted">
                   <tr class="small text-uppercase">
@@ -192,11 +193,12 @@
                   {% endfor %}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         </aside>
 
-        <aside class="col-lg-4">
+        <aside class="col-12 col-lg-4 mt-3 mt-lg-0">
           <div class="card shadow-sm border-0 sticky-top" style="top:1rem;">
             <div class="card-body">
               <h5 class="mb-3">Totals</h5>

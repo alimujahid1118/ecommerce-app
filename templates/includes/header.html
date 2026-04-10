@@ -1,7 +1,7 @@
 {% load static %}
 
 <header class="section-header">
-  <nav class="navbar p-md-0 navbar-expand-sm navbar-light border-bottom">
+  <nav class="navbar p-md-0 navbar-expand-sm navbar-light border-bottom d-none d-md-block">
     <div class="container">
       <button
         class="navbar-toggler"
@@ -42,25 +42,32 @@
     <!-- container //  -->
   </nav>
 
-  <section class="header-main border-bottom">
+  <section class="header-main border-bottom py-3 py-md-4">
     <div class="container">
-      <div class="row align-items-center">
-        <div class="col-lg-2 col-md-3 col-6">
-          <a href="/" class="brand-wrap">
-            <img class="logo" src="{% static '/images/logo.png' %}" />
+      <!-- Row 1: logo, categories, account / cart -->
+      <div class="row align-items-center header-main-top">
+        <div class="col-auto pr-2">
+          <a href="/" class="brand-wrap d-inline-block">
+            <img
+              class="logo header-logo"
+              src="{% static '/images/logo.png' %}"
+              alt="GreatKart home"
+            />
           </a>
-          <!-- brand-wrap.// -->
         </div>
-        <div class="col-lg col-sm col-md col-6 flex-grow-0">
-          <div class="category-wrap dropdown d-inline-block float-right">
+        <div class="col-auto px-1 header-actions">
+          <div class="category-wrap dropdown d-inline-block">
             <button
               type="button"
-              class="btn btn-primary dropdown-toggle"
+              class="btn btn-primary btn-sm py-1 px-2 header-cat-btn dropdown-toggle"
               data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
             >
-              <i class="fa fa-bars"></i> All category
+              <i class="fa fa-bars" aria-hidden="true"></i>
+              <span class="d-none d-sm-inline"> Categories</span>
             </button>
-            <div class="dropdown-menu">
+            <div class="dropdown-menu dropdown-menu-right">
               <a class="dropdown-item" href="{% url 'view_products' %}"
                 >All Products
               </a>
@@ -71,39 +78,10 @@
               {% endfor %}
             </div>
           </div>
-          <!-- category-wrap.// -->
         </div>
-        <!-- col.// -->
-        <a
-          href="{% url 'view_products' %}"
-          class="btn btn-outline-primary"
-          style="width: auto"
-          >Store</a
-        >
-        <div class="col-lg col-md-6 col-sm-12 col">
-          <form action="{% url 'search' %}" class="search">
-            <div class="input-group w-100">
-              <input
-                type="text"
-                class="form-control"
-                style="width: 60%"
-                placeholder="Search"
-                name="keyword"
-              />
-
-              <div class="input-group-append">
-                <button class="btn btn-primary" type="submit">
-                  <i class="fa fa-search"></i>
-                </button>
-              </div>
-            </div>
-          </form>
-          <!-- search-wrap .end// -->
-        </div>
-        <!-- col.// -->
-        <div class="col-lg-3 col-sm-6 col-8 order-2 order-lg-3">
-          <div class="d-flex justify-content-end mb-3 mb-lg-0">
-            <div class="widget-header">
+        <div class="col pl-2 text-md-right">
+          <div class="d-none d-md-flex justify-content-end align-items-start flex-wrap">
+            <div class="widget-header text-left">
               {% if user.is_authenticated %}
               <small class="title text-muted">Welcome {{ user.email }}!</small>
               <div>
@@ -122,18 +100,68 @@
             </div>
             <a href="{% url 'cart_detail' %}" class="widget-header pl-3 ml-3">
               <div class="icon icon-sm rounded-circle border">
-                <i class="fa fa-shopping-cart"></i>
+                <i class="fa fa-shopping-cart" aria-hidden="true"></i>
               </div>
               <span class="badge badge-pill badge-danger notify"
                 >{{ total_quantity }}</span
               >
             </a>
           </div>
-          <!-- widgets-wrap.// -->
+          <div class="d-flex d-md-none align-items-center justify-content-end header-toolbar-mobile">
+            {% if user.is_authenticated %}
+            <a
+              href="{% url 'dashboard' %}"
+              class="btn btn-light border rounded-circle p-1 header-icon-btn"
+              aria-label="Account"
+              title="Dashboard"
+            >
+              <i class="fa fa-user fa-sm" aria-hidden="true"></i>
+            </a>
+            {% else %}
+            <a
+              href="{% url 'login' %}"
+              class="btn btn-light border rounded-circle p-1 header-icon-btn"
+              aria-label="Sign in"
+              title="Sign in"
+            >
+              <i class="fa fa-user fa-sm" aria-hidden="true"></i>
+            </a>
+            {% endif %}
+            <a href="{% url 'cart_detail' %}" class="widget-header pl-2 ml-1">
+              <div class="icon icon-sm rounded-circle border header-cart-icon">
+                <i class="fa fa-shopping-cart fa-sm" aria-hidden="true"></i>
+              </div>
+              <span class="badge badge-pill badge-danger notify"
+                >{{ total_quantity }}</span
+              >
+            </a>
+          </div>
         </div>
-        <!-- col.// -->
       </div>
-      <!-- row.// -->
+
+      <!-- Row 2: full-width search -->
+      <div class="row header-main-search-row">
+        <div class="col-12 pt-3 header-main-search">
+          <form action="{% url 'search' %}" class="search w-100">
+            <div class="input-group w-100">
+              <input
+                type="search"
+                class="form-control"
+                placeholder="Search products..."
+                name="keyword"
+                autocomplete="off"
+                aria-label="Search products"
+              />
+
+              <div class="input-group-append">
+                <button class="btn btn-primary" type="submit" aria-label="Search">
+                  <i class="fa fa-search" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
     <!-- container.// -->
   </section>

@@ -1,12 +1,13 @@
 {% extends 'base.html' %} {% load static %} {% block content %}
 
-<section class="section-content padding-y bg">
+<section class="section-content padding-y bg px-2 px-md-0">
   <div class="container">
     <div class="row">
       {% if cart_items %}
-      <aside class="col-lg-9">
+      <aside class="col-12 col-lg-9">
         <div class="card">
-          <table class="table table-borderless table-shopping-cart">
+          <div class="table-responsive table-responsive-stack">
+          <table class="table table-borderless table-shopping-cart mb-0">
             <thead class="text-muted">
               <tr class="small text-uppercase">
                 <th scope="col">Product</th>
@@ -43,7 +44,7 @@
                               {{ variation.variation_category }}:
                             </span>
                             &nbsp;
-                            <span class="badge bg-light text-dark border px-2 py-1">
+                            <span class="badge badge-light border px-2 py-1">
                               {{ variation.variation_value|title }}
                             </span>
                           </div>
@@ -106,10 +107,11 @@
               {% endfor %}
             </tbody>
           </table>
+          </div>
         </div>
       </aside>
 
-      <aside class="col-lg-3">
+      <aside class="col-12 col-lg-3 mt-3 mt-lg-0">
         <div class="card">
           <div class="card-body">
             <dl class="dlist-align">
@@ -148,7 +150,7 @@
     </div>
     {% else %}
     <div
-      class="container vh-100 d-flex justify-content-center align-items-center"
+      class="container cart-empty-vh d-flex justify-content-center align-items-center py-5"
     >
       <div
         class="card shadow-lg text-center p-5"

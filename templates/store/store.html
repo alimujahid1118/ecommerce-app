@@ -3,7 +3,7 @@
 {% block content %}
 
 <!-- ========================= SECTION PAGETOP ========================= -->
-<section class="section-pagetop bg">
+<section class="section-pagetop bg px-2 px-md-0">
   <div class="container">
     {% if 'search' in request.path %}
     <h2 class="title-page">Search Results</h2>
@@ -15,11 +15,11 @@
 <!-- ========================= SECTION INTRO END// ========================= -->
 
 <!-- ========================= SECTION CONTENT ========================= -->
-<section class="section-content padding-y">
+<section class="section-content padding-y bg px-2 px-md-0">
   <div class="container">
     <div class="row">
       <!-- SIDEBAR -->
-      <aside class="col-md-3">
+      <aside class="col-12 col-md-3 mb-3 mb-md-0">
         <div class="card">
           <!-- Categories -->
           <article class="filter-group">
@@ -73,11 +73,11 @@
 
               <div class="card-body">
                 <div class="form-row">
-                  <div class="form-group col-md-6">
+                  <div class="form-group col-12 col-md-6">
                     <label>Min</label>
                     <input type="number" class="form-control" name="min_price" placeholder="$0" />
                   </div>
-                  <div class="form-group col-md-6">
+                  <div class="form-group col-12 col-md-6">
                     <label>Max</label>
                     <input type="number" class="form-control" name="max_price" placeholder="$1000+" />
                   </div>
@@ -93,22 +93,22 @@
       </aside>
 
       <!-- MAIN CONTENT -->
-      <main class="col-md-9">
+      <main class="col-12 col-md-9">
         <header class="border-bottom mb-4 pb-3">
           <div class="form-inline">
             <span class="mr-md-auto"><b>{{ count }}</b> items found</span>
           </div>
         </header>
 
-        <div class="row">
+        <div class="row product-grid-mobile">
           {% if products %} 
           {% for product in products %}
           <!-- PRODUCT CARD (duplicate later yourself) -->
-          <div class="col-md-4">
-            <figure class="card card-product-grid">
+          <div class="col-12 col-md-4 mb-3">
+            <figure class="card card-product-grid h-100 shadow-sm">
               <div class="img-wrap">
                 <a href="{% url 'product' product.category.slug product.slug %}"
-                  ><img src="{{ product.images.url }}"
+                  ><img src="{{ product.images.url }}" class="img-fluid" alt=""
                 /></a>
               </div>
 

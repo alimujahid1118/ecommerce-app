@@ -1,0 +1,28 @@
+/*
+  Small utilities used in templates after removing Bootstrap 5 (it conflicted with BS4 grid).
+*/
+.rounded-4 {
+  border-radius: 1rem !important;
+}
+.min-vh-100 {
+  min-height: 100vh !important;
+}
+.min-vh-50 {
+  min-height: 50vh !important;
+}
+.gap-3 {
+  gap: 1rem !important;
+}
+.me-1 {
+  margin-right: 0.25rem !important;
+}
+.me-2 {
+  margin-right: 0.5rem !important;
+}
+.fw-semibold {
+  font-weight: 600 !important;
+}
+/* Flex child so search can shrink in one-row header */
+.min-w-0 {
+  min-width: 0 !important;
+}

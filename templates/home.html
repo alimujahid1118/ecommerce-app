@@ -1,6 +1,6 @@
 {% extends 'base.html' %} {% load static %} {% block content %}
 <!-- ========================= SECTION MAIN ========================= -->
-<section class="section-intro padding-y-sm">
+<section class="section-intro padding-y-sm px-2 px-md-0">
   <div class="container">
     <div class="intro-banner-wrap">
       <img
@@ -14,27 +14,27 @@
 <!-- ========================= SECTION MAIN END// ========================= -->
 
 <!-- ========================= SECTION  ========================= -->
-<section class="section-name padding-y-sm">
+<section class="section-name padding-y-sm px-2 px-md-0">
   <div class="container">
-    <header class="section-heading">
+    <header class="section-heading clearfix">
       <a
         href="{% url 'view_products' %}"
         class="btn btn-outline-primary float-right"
         >See all</a
       >
-      <h3 class="section-title">Popular products</h3>
+      <h3 class="section-title mb-0">Popular products</h3>
     </header>
     <!-- sect-heading -->
 
-    <div class="row">
+    <div class="row product-grid-mobile">
       {% for product in products %}
-      <div class="col-md-3">
-        <div class="card card-product-grid">
+      <div class="col-12 col-md-3 mb-3">
+        <div class="card card-product-grid h-100 shadow-sm">
           <a
             href="{% url 'product' product.category.slug product.slug %}"
             class="img-wrap"
           >
-            <img src="{{ product.images.url }}" />
+            <img src="{{ product.images.url }}" class="img-fluid" alt="{{ product.product_name }}" />
           </a>
           <figcaption class="info-wrap">
             <a

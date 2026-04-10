@@ -2,20 +2,20 @@
 {% load static %}
 
 {% block content %}
-<section class="page-404-wrap min-vh-100 d-flex align-items-center py-5">
+<section class="page-404-wrap min-vh-100 d-flex align-items-center py-5 px-2 px-md-3">
   <div class="container py-5">
     <div class="row justify-content-center">
       <div class="col-12 col-lg-10 col-xl-8 text-center">
         <div class="page-404-card mx-auto p-4 p-md-5 rounded-4 shadow-lg border-0 position-relative overflow-hidden">
-          <div class="page-404-glow position-absolute top-0 start-50 translate-middle-x"></div>
+          <div class="page-404-glow page-404-glow-center position-absolute"></div>
           <div class="position-relative">
-            <p class="text-uppercase letter-spacing text-muted small mb-2 fw-semibold">Page not found</p>
-            <h1 class="display-1 fw-bold page-404-title mb-3">404</h1>
+            <p class="text-uppercase letter-spacing text-muted small mb-2 font-weight-bold">Page not found</p>
+            <h1 class="display-4 font-weight-bold page-404-title mb-3">404</h1>
             <p class="lead text-muted mb-2">
               We couldn’t find that page — it may have been moved or never existed.
             </p>
             {% if request_path %}
-            <p class="small text-secondary mb-4 font-monospace bg-light rounded-3 py-2 px-3 d-inline-block">
+            <p class="small text-secondary mb-4 bg-light rounded py-2 px-3 d-inline-block">
               <i class="fas fa-link me-1 opacity-50"></i>{{ request_path }}
             </p>
             {% else %}
@@ -49,6 +49,11 @@
     backdrop-filter: blur(12px);
     max-width: 640px;
     border: 1px solid rgba(99, 102, 241, 0.12) !important;
+  }
+  .page-404-glow-center {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
   }
   .page-404-glow {
     width: 120%;
