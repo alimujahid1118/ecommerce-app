@@ -244,6 +244,12 @@ def place_order(request):
             context = _payment_page_context(request, order)
             return render(request, "orders/payment.html", context)
 
+        messages.error(request, "Please correct the billing details and try again.")
+        for field_name, errors in form.errors.items():
+            label = form.fields.get(field_name).label if field_name in form.fields else None
+            prefix = label or "Error"
+            for err in errors:
+                messages.error(request, f"{prefix}: {err}")
         context = {
             "form": form,
             "cart_items": cart_items,

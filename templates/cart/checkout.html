@@ -5,6 +5,16 @@
 <section class="section-content padding-y bg px-2 px-md-0">
 <div class="container">
 
+{% if messages %}
+  <div class="mb-3">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }}" role="alert">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
 <div class="row checkout-billing">
 
   <!-- Billing Address -->

@@ -6,6 +6,11 @@ from .models import Order
 
 
 class OrderForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # This field is optional in checkout UI, so keep backend validation aligned.
+        self.fields["address_line_2"].required = False
+
     class Meta:
         model = Order
         fields = [
